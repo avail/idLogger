@@ -7,13 +7,18 @@ FILE* windowLog;
 int g_x = 0;
 int g_y = 0;
 
+bool enableWindowLog = false;
+
 HWND hwndWindowA;
 HWND hwndWindowW;
 
 HWND WINAPI CreateWindowExAHk(DWORD dwExStyle, LPCSTR lpClassName, LPCSTR lpWindowName, DWORD dwStyle, int x, int y, int nWidth, int nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam)
 {
-	fprintf(windowLog, "CreateWindowExAHooked: lpClassName %s lpWindowName %s x %i y %i nWidth %i nHeight %i dwStyle %p\n", lpClassName, lpWindowName, x, y, nWidth, nHeight, dwStyle);
-	fflush(windowLog);
+	if (enableWindowLog)
+	{
+		fprintf(windowLog, "CreateWindowExAHooked: lpClassName %s lpWindowName %s x %i y %i nWidth %i nHeight %i dwStyle %p\n", lpClassName, lpWindowName, x, y, nWidth, nHeight, dwStyle);
+		fflush(windowLog);
+	}
 
 	int rx, ry;
 	GetDesktopResolution(rx, ry);
@@ -38,8 +43,11 @@ HWND WINAPI CreateWindowExAHk(DWORD dwExStyle, LPCSTR lpClassName, LPCSTR lpWind
 
 HWND WINAPI CreateWindowExWHk(DWORD dwExStyle, LPCWSTR lpClassName, LPCWSTR lpWindowName, DWORD dwStyle, int x, int y, int nWidth, int nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam)
 {
-	fprintf(windowLog, "CreateWindowExWHooked: lpClassName %s lpWindowName %s x %i y %i nWidth %i nHeight %i dwStyle %p\n", lpClassName, lpWindowName, x, y, nWidth, nHeight, dwStyle);
-	fflush(windowLog);
+	if (enableWindowLog)
+	{
+		fprintf(windowLog, "CreateWindowExWHooked: lpClassName %s lpWindowName %s x %i y %i nWidth %i nHeight %i dwStyle %p\n", lpClassName, lpWindowName, x, y, nWidth, nHeight, dwStyle);
+		fflush(windowLog);
+	}
 
 	int rx, ry;
 	GetDesktopResolution(rx, ry);
@@ -64,8 +72,11 @@ HWND WINAPI CreateWindowExWHk(DWORD dwExStyle, LPCWSTR lpClassName, LPCWSTR lpWi
 
 BOOL WINAPI AdjustWindowRectHk(LPRECT lpRect, DWORD dwStyle, BOOL bMenu)
 {
-	fprintf(windowLog, "AdjustWindowRectHooked: lpRect %i dwStyle %p bMenu %i\n", lpRect, dwStyle, bMenu);
-	fflush(windowLog);
+	if (enableWindowLog)
+	{
+		fprintf(windowLog, "AdjustWindowRectHooked: lpRect %i dwStyle %p bMenu %i\n", lpRect, dwStyle, bMenu);
+		fflush(windowLog);
+	}
 
 	dwStyle = g_windowStyle;
 
@@ -74,8 +85,11 @@ BOOL WINAPI AdjustWindowRectHk(LPRECT lpRect, DWORD dwStyle, BOOL bMenu)
 
 BOOL WINAPI SetWindowPosHk(HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, UINT uFlags)
 {
-	fprintf(windowLog, "SetWindowPosHooked: hWnd %p X %i Y %i cx %i cy %i\n", hWnd, X, Y, cx, cy);
-	fflush(windowLog);
+	if (enableWindowLog)
+	{
+		fprintf(windowLog, "SetWindowPosHooked: hWnd %p X %i Y %i cx %i cy %i\n", hWnd, X, Y, cx, cy);
+		fflush(windowLog);
+	}
 
 	if (hwndWindowA == hWnd || hwndWindowW == hWnd)
 	{
@@ -88,8 +102,11 @@ BOOL WINAPI SetWindowPosHk(HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx
 
 LONG __stdcall ChangeDisplaySettingsHk(DEVMODEA *lpDevMode, DWORD dwFlags)
 {
-	fprintf(windowLog, "ChangeDisplaySettingsHooked: lpDevMode %i dwFlags %p\n", lpDevMode, dwFlags);
-	fflush(windowLog);
+	if (enableWindowLog)
+	{
+		fprintf(windowLog, "ChangeDisplaySettingsHooked: lpDevMode %i dwFlags %p\n", lpDevMode, dwFlags);
+		fflush(windowLog);
+	}
 
 	lpDevMode = NULL; // retain original changes instead of applying Initial D's modified values
 
@@ -98,11 +115,20 @@ LONG __stdcall ChangeDisplaySettingsHk(DEVMODEA *lpDevMode, DWORD dwFlags)
 
 static InitFunction windowHookFunc([]()
 {
-	windowLog = fopen("idLogger-window.txt", "w");
+	bool enableWindowed = ToBool(config["WindowHooks"]["EnableWindowedModeHook"]);
+	enableWindowLog = ToBool(config["Logging"]["EnableWindowLog"]);
 
-	*(HWND*)0xDBB774 = (HWND)CreateWindowExAHk;
-	*(HWND*)0xDBB754 = (HWND)CreateWindowExWHk;
-	*(BOOL*)0xDBB7A4 = (BOOL)AdjustWindowRectHk;
-	*(BOOL*)0xDBB7A8 = (BOOL)SetWindowPosHk;
-	*(LONG*)0xDBB7BC = (LONG)ChangeDisplaySettingsHk;
+	if (enableWindowLog)
+	{
+		windowLog = fopen("idLogger-window.txt", "w");
+	}
+
+	if (enableWindowed)
+	{
+		*(HWND*)0xDBB774 = (HWND)CreateWindowExAHk;
+		*(HWND*)0xDBB754 = (HWND)CreateWindowExWHk;
+		*(BOOL*)0xDBB7A4 = (BOOL)AdjustWindowRectHk;
+		*(BOOL*)0xDBB7A8 = (BOOL)SetWindowPosHk;
+		*(LONG*)0xDBB7BC = (LONG)ChangeDisplaySettingsHk;
+	}
 });

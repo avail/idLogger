@@ -48,13 +48,18 @@ void hookedFprintf(void* a1, const char* a2, ...)
 
 static InitFunction gameLoggerFunc([]()
 {
-	// open logging stuff
-	gameLog = fopen("idLogger-game.txt", "w");
+	bool enableWindowLog = ToBool(config["Logging"]["EnableGameLog"]);
 
-	// nullsub_34 (debug logging)
-	injector::MakeJMP(0x4075E0, hookedPrint);
-	injector::MakeNOP(0xAA3293, 6);
-	injector::MakeCALL(0xAA3293, hookedFprintf);
-	injector::MakeNOP(0xAC22B3, 6);
-	injector::MakeCALL(0xAC22B3, hookedFprintf);
+	if (enableWindowLog)
+	{
+		// open logging stuff
+		gameLog = fopen("idLogger-game.txt", "w");
+
+		// nullsub_34 (debug logging)
+		injector::MakeJMP(0x4075E0, hookedPrint);
+		injector::MakeNOP(0xAA3293, 6);
+		injector::MakeCALL(0xAA3293, hookedFprintf);
+		injector::MakeNOP(0xAC22B3, 6);
+		injector::MakeCALL(0xAC22B3, hookedFprintf);
+	}
 });
