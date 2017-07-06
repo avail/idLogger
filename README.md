@@ -1,6 +1,6 @@
 ## idLogger
 
-A project that attempts to add support for non-nVidia GPUs to Initial D 6 Arcade Stage
+A project that attempts to add support for non-nVidia GPUs to Initial D 6 Arcade Stage, *among other things*.
 
 
 ## How to run
