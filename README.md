@@ -16,3 +16,5 @@ If the game crashes, create a new [issue](https://github.com/avail/idLogger/issu
 [NTAuthority](//github.com/nta) - help w/ reverse engineering and debugging the game
 
 [TeknoGods/Reaver](//teknogods.com) - for TeknoParrot, a Ring System game loader
+
+[ThirteenAG](//github.com/ThirteenAG) - for [Ultimate Asi Loader](https://github.com/ThirteenAG/Ultimate-ASI-Loader), which is used to load our plugin to the game itself.
