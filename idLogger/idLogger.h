@@ -10,3 +10,7 @@
 
 #include <injector/hooking.hpp>
 #include <injector/calling.hpp>
+
+#include <ini_parser.hpp>
+
+extern linb::ini config;
