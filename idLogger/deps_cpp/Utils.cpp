@@ -67,3 +67,22 @@ void GetDesktopResolution(int& x, int& y)
 	x = desktop.right;
 	y = desktop.bottom;
 }
+
+int strcmp(const char* str1, const char* str2, bool csensitive)
+{
+	return (csensitive ? ::strcmp(str1, str2) : ::_stricmp(str1, str2));
+}
+
+int Compare(const std::string& str1, const std::string& str2, bool case_sensitive)
+{
+	if (str1.length() == str2.length())
+		return strcmp(str1.c_str(), str2.c_str(), case_sensitive);
+
+	return (str1.length() < str2.length() ? -1 : 1);
+}
+
+bool ToBool(const std::string& s)
+{
+	if (s.size() == 1) return s.front() != '0';
+	return !!Compare(s, "false", false);
+}
