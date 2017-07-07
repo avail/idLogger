@@ -7,6 +7,9 @@ FILE* windowLog;
 int g_x = 0;
 int g_y = 0;
 
+int g_width = 0;
+int g_height = 0;
+
 bool enableWindowLog = false;
 
 HWND hwndWindowA;
@@ -31,7 +34,7 @@ HWND WINAPI CreateWindowExAHk(DWORD dwExStyle, LPCSTR lpClassName, LPCSTR lpWind
 		dwStyle = g_windowStyle;
 	}
 
-	HWND thisWindow = CreateWindowExA(dwExStyle, lpClassName, lpWindowName, dwStyle, g_x, g_y, nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam);
+	HWND thisWindow = CreateWindowExA(dwExStyle, lpClassName, lpWindowName, dwStyle, g_x, g_y, g_width, g_height, hWndParent, hMenu, hInstance, lpParam);
 
 	if (lpWindowName)
 	{
@@ -60,7 +63,7 @@ HWND WINAPI CreateWindowExWHk(DWORD dwExStyle, LPCWSTR lpClassName, LPCWSTR lpWi
 		dwStyle = g_windowStyle;
 	}
 
-	HWND thisWindow = CreateWindowExW(dwExStyle, lpClassName, lpWindowName, dwStyle, g_x, g_y, nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam);
+	HWND thisWindow = CreateWindowExW(dwExStyle, lpClassName, lpWindowName, dwStyle, g_x, g_y, g_width, g_height, hWndParent, hMenu, hInstance, lpParam);
 
 	if (lpWindowName)
 	{
@@ -118,6 +121,12 @@ static InitFunction windowHookFunc([]()
 	bool enableWindowed = ToBool(config["WindowHooks"]["EnableWindowedModeHook"]);
 	enableWindowLog = ToBool(config["Logging"]["EnableWindowLog"]);
 
+	linb::ini gameConfig;
+	gameConfig.read_file("../InitialD.ini");
+
+	g_width = atoi(gameConfig[" Graphics "]["Width"].c_str());
+	g_height = atoi(gameConfig[" Graphics "]["Height"].c_str());
+
 	if (enableWindowLog)
 	{
 		windowLog = fopen("idLogger-window.txt", "w");
@@ -131,4 +140,41 @@ static InitFunction windowHookFunc([]()
 		*(BOOL*)0xDBB7A8 = (BOOL)SetWindowPosHk;
 		*(LONG*)0xDBB7BC = (LONG)ChangeDisplaySettingsHk;
 	}
+
+	// height
+	injector::WriteMemory(0x768A20 + 0x24E + 1, g_height, true);
+	injector::WriteMemory(0x768DC5, g_height, true);
+	injector::WriteMemory(0x768A20 + 0xBB7 + 1, g_height, true);
+	injector::WriteMemory(0x76C8A8, g_height, true);
+	injector::WriteMemory(0x76D129, g_height, true);
+	injector::WriteMemory(0x7B4400 + 0x44 + 1, g_height, true);
+	injector::WriteMemory(0x7B4640 + 0x5B + 1, g_height, true);
+	injector::WriteMemory(0x7B4640 + 0x71 + 1, g_height, true);
+	injector::WriteMemory(0x83D82E, g_height, true);
+	injector::WriteMemory(0x865780 + 0x44 + 1, g_height, true);
+	injector::WriteMemory(0x86D271, g_height, true);
+	injector::WriteMemory(0x87EE20, g_height, true);
+
+	// width
+	injector::WriteMemory(0x768A20 + 0x253 + 1, g_width, true);
+	injector::WriteMemory(0x768DBA, g_width, true);
+	injector::WriteMemory(0x768A20 + 0xBBC + 1, g_width, true);
+	injector::WriteMemory(0x76C8A3, g_width, true);
+	injector::WriteMemory(0x76D122, g_width, true);
+	injector::WriteMemory(0x7B4400 + 0x49 + 1, g_width, true);
+	injector::WriteMemory(0x7B4640 + 0x60 + 1, g_width, true);
+	injector::WriteMemory(0x7B4640 + 0x76 + 1, g_width, true);
+	injector::WriteMemory(0x83D825, g_width, true);
+	injector::WriteMemory(0x865780 + 0x49 + 1, g_width, true);
+	injector::WriteMemory(0x86D269, g_width, true);
+	injector::WriteMemory(0x87EE18, g_width, true);
+
+	// remove limits in reading resolution from configuration
+	// less than 640, bigger than 1600 (width)
+	injector::MakeNOP(0x9B4C30 + 0x133, 2);
+	injector::WriteMemory<BYTE>(0x9B4C30 + 0x13A, 0xEB, true);
+	
+	// less than 400, bigger than 1200 (height)
+	injector::MakeNOP(0x9B4C30 + 0x16F, 2);
+	injector::WriteMemory<byte>(0x9B4C30 + 0x177, 0xEB, true);
 });
