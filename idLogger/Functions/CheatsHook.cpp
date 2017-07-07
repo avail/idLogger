@@ -1,6 +1,6 @@
 #include "../idLogger.h"
 
-int hookedConnectToNet()
+int amNetworkInitHk()
 {
 	return 0;
 }
@@ -13,5 +13,5 @@ static InitFunction cheatsFunc([]()
 	((int(__thiscall*)(int))0x4CCE00)(0);*/
 
 	// fail network init instantly
-	injector::MakeCALL(0x9B1C70 + 0x3B8, hookedConnectToNet);
+	injector::MakeCALL(0x9B1C70 + 0x3B8, amNetworkInitHk);
 });
