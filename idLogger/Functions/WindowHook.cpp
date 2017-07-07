@@ -174,7 +174,13 @@ static InitFunction windowHookFunc([]()
 	injector::MakeNOP(0x9B4C30 + 0x133, 2);
 	injector::WriteMemory<BYTE>(0x9B4C30 + 0x13A, 0xEB, true);
 	
+	// some resolutions are not divisble by 8, so skip that check too
+	injector::WriteMemory<BYTE>(0x9B4C30 + 0x144, 0xEB, true);
+
 	// less than 400, bigger than 1200 (height)
 	injector::MakeNOP(0x9B4C30 + 0x16F, 2);
-	injector::WriteMemory<byte>(0x9B4C30 + 0x177, 0xEB, true);
+	injector::WriteMemory<BYTE>(0x9B4C30 + 0x177, 0xEB, true);
+
+	// some resolutions are not divisble by 8, so skip that check too
+	injector::WriteMemory<BYTE>(0x9B4C30 + 0x181, 0xEB, true);
 });
